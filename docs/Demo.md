@@ -23,3 +23,13 @@ In this project The MSP430 will be programmed to Blink both LEDs at 0.5 hz with 
 *Figure 3: Delay Flowchart*
 
 Figures 2 and 3 show the logic for the code design of the red LED running on the delay loop.
+
+## Green LED delay loop
+
+### Code Design
+
+![Fig4](assets/Proj1-flowchart-Timer-Interrupt-FC.svg)
+
+*Figure 4: Flash Green LED Timer B0 Flowchart*
+
+Figure 4 shows the logic for the code design of the green LED running on the timer interrupt.
