@@ -52,4 +52,4 @@ First the P6.6 output corresponding the the green LED was set up and tested. The
 
 *Figure 6: Green LED oscilloscope reading*
 
-Figure 5 shows the accuracy of the timing from the final code solution.
+Figure 6 shows the accuracy of the timing from the final code solution.
