@@ -77,11 +77,15 @@
 
 RESET       mov.w   #__STACK_END,SP         ; Initialize stack pointer
 StopWDT     mov.w   #WDTPW+WDTHOLD,&WDTCTL  ; Stop WDT
+
+SetupP6     bic.b   #BIT6,&P6OUT            ; Clear P6.6 otput
+            bis.b   #BIT6,&P6DIR            ; P6.6 output
 SetupP1     bic.b   #BIT0,&P1OUT            ; Clear P1.0 output
             bis.b   #BIT0,&P1DIR            ; P1.0 output
             bic.w   #LOCKLPM5,&PM5CTL0      ; Unlock I/O pins
 
-Mainloop    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
+Mainloop    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 1s
+            xor.b   #BIT6,&P6OUT
             call    #Delay1s
             jmp     Mainloop                ; Loop main program
 
