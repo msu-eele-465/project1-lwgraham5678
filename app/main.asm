@@ -79,14 +79,25 @@ RESET       mov.w   #__STACK_END,SP         ; Initialize stack pointer
 StopWDT     mov.w   #WDTPW+WDTHOLD,&WDTCTL  ; Stop WDT
 SetupP1     bic.b   #BIT0,&P1OUT            ; Clear P1.0 output
             bis.b   #BIT0,&P1DIR            ; P1.0 output
-            bic.w   #LOCKLPM5,&PM5CTL0       ; Unlock I/O pins
+            bic.w   #LOCKLPM5,&PM5CTL0      ; Unlock I/O pins
 
 Mainloop    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
-Wait        mov.w   #50000,R15              ; Delay to R15
+Wait        mov.w   #10,R15                 ; Delay to R15
+            mov.w   #10,R14                 ; initialize inner delay loop
 L1          dec.w   R15                     ; Decrement R15
-            jnz     L1                      ; Delay over?
+            jnz     Delay                   ; Delay routine jump
             jmp     Mainloop                ; Again
             NOP
+
+;------------------------------------------------------------------------------
+;           Delay Subroutine
+;------------------------------------------------------------------------------
+
+Delay       dec.w   R14                     ; Decriment inner delay loop
+            jnz     Delay                   ; Jump to inner delay loop if R14 ≠ 0
+            jmp     L1                      ; Return to outer loop
+            NOP
+
 ;------------------------------------------------------------------------------
 ;           Interrupt Vectors
 ;------------------------------------------------------------------------------
