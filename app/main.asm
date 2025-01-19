@@ -82,7 +82,7 @@ SetupP1     bic.b   #BIT0,&P1OUT            ; Clear P1.0 output
             bic.w   #LOCKLPM5,&PM5CTL0      ; Unlock I/O pins
 
 Mainloop    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
-            call    #Delay1s
+            call    #Delay1s                ; calling 1s delay subroutine
             jmp     Mainloop                ; Loop main program
 
 ;------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ Mainloop    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
 Delay1s:
 Wait        mov.w   #71,R15                 ; Delay to R15
 L1          dec.w   R15                     ; Decrement R15
-            mov.w   #5000,R14              ; initialize inner delay loop
+            mov.w   #5000,R14               ; initialize inner delay loop
             jnz     L2                      ; Delay routine jump
             jmp     End_Delay1s             ; Jump to return
 
