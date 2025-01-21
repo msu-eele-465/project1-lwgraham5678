@@ -77,19 +77,61 @@
 
 RESET       mov.w   #__STACK_END,SP         ; Initialize stack pointer
 StopWDT     mov.w   #WDTPW+WDTHOLD,&WDTCTL  ; Stop WDT
+
+SetupTB0    bis.w	#TBCLR,&TB0CTL			; clear timers & dividers
+            bis.w	#TBSSEL__ACLK,&TB0CTL	; set ACLK as source
+            bis.w	#MC__CONTINUOUS,&TB0CTL ; choosing continuous counting
+            bis.w	#CNTL_1,&TB0CTL 		; set 12-bit clock length
+            bis.w	#ID__8,&TB0CTL			; set 8 in divider 1
+            bis.w	#TBIE,&TB0CTL			; enable overflow interrupt
+            bic.w	#TBIFG,&TB0CTL			; clear inturrupt flag
+                                            ; calc -> (8*2^12)/32768 = 1
+            NOP
+            bis.w	#GIE, SR				; enabling global interrupts
+            NOP
+
+SetupP6     bic.b   #BIT6,&P6OUT            ; Clear P6.6 otput
+            bis.b   #BIT6,&P6DIR            ; P6.6 output
 SetupP1     bic.b   #BIT0,&P1OUT            ; Clear P1.0 output
             bis.b   #BIT0,&P1DIR            ; P1.0 output
-            bic.w   #LOCKLPM5,&PM5CTL0       ; Unlock I/O pins
+            bic.w   #LOCKLPM5,&PM5CTL0      ; Unlock I/O pins
 
-Mainloop    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
-Wait        mov.w   #50000,R15              ; Delay to R15
+Mainloop    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 1s
+            call    #Delay1s                ; calling 1s delay subroutine
+            jmp     Mainloop                ; Loop main program
+
+;------------------------------------------------------------------------------
+;           Delay 1 s Subroutine
+;------------------------------------------------------------------------------
+Delay1s:
+Wait        mov.w   #71,R15                 ; Delay to R15
 L1          dec.w   R15                     ; Decrement R15
-            jnz     L1                      ; Delay over?
-            jmp     Mainloop                ; Again
-            NOP
+            mov.w   #5000,R14               ; initialize inner delay loop
+            jnz     L2                      ; Delay routine jump
+            jmp     End_Delay1s             ; Jump to return
+
+
+L2          dec.w   R14                     ; Decriment inner delay loop
+            jnz     L2                      ; Jump to inner delay loop if R14 ≠ 0
+            jmp     L1                      ; Jump to outer loop
+
+End_Delay1s ret                             ; Return
+
+;------------------------------------------------------------------------------
+;           TB0 ISR 1s overflow timer
+;------------------------------------------------------------------------------
+TimerB0_1s:
+		xor.b	#BIT6, &P6OUT			    ; toggle P6.6
+		bic.w	#TBIFG, &TB0CTL			    ; clear inturrupt flag
+		reti
+
 ;------------------------------------------------------------------------------
 ;           Interrupt Vectors
 ;------------------------------------------------------------------------------
             .sect   RESET_VECTOR            ; MSP430 RESET Vector
             .short  RESET                   ;
+
+            .sect	".int42"                ; TB0 Interrupt Vector
+            .short	TimerB0_1s              ;
+
             .end
